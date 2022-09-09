@@ -4,7 +4,7 @@
 #
 Name     : scons
 Version  : 3.1.2
-Release  : 44
+Release  : 45
 URL      : https://sourceforge.net/projects/scons/files/scons/3.1.2/scons-3.1.2.tar.gz
 Source0  : https://sourceforge.net/projects/scons/files/scons/3.1.2/scons-3.1.2.tar.gz
 Summary  : Open Source next-generation build tool.
@@ -50,36 +50,57 @@ man components for the scons package.
 %setup -q -n scons-3.1.2
 cd %{_builddir}/scons-3.1.2
 %patch1 -p1
+pushd ..
+cp -a scons-3.1.2 buildavx2
+popd
 
 %build
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C.UTF-8
-export SOURCE_DATE_EPOCH=1607992054
+export SOURCE_DATE_EPOCH=1662693824
 export GCC_IGNORE_WERROR=1
 export AR=gcc-ar
 export RANLIB=gcc-ranlib
 export NM=gcc-nm
-export CFLAGS="$CFLAGS -O3 -ffat-lto-objects -flto=4 "
-export FCFLAGS="$FFLAGS -O3 -ffat-lto-objects -flto=4 "
-export FFLAGS="$FFLAGS -O3 -ffat-lto-objects -flto=4 "
-export CXXFLAGS="$CXXFLAGS -O3 -ffat-lto-objects -flto=4 "
+export CFLAGS="$CFLAGS -O3 -ffat-lto-objects -flto=auto "
+export FCFLAGS="$FFLAGS -O3 -ffat-lto-objects -flto=auto "
+export FFLAGS="$FFLAGS -O3 -ffat-lto-objects -flto=auto "
+export CXXFLAGS="$CXXFLAGS -O3 -ffat-lto-objects -flto=auto "
 export MAKEFLAGS=%{?_smp_mflags}
 python3 setup.py build
 
+pushd ../buildavx2/
+export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "
+export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "
+export FFLAGS="$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "
+export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v3 "
+export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3 "
+python3 setup.py build
+
+popd
 %install
 export MAKEFLAGS=%{?_smp_mflags}
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/package-licenses/scons
-cp %{_builddir}/scons-3.1.2/LICENSE.txt %{buildroot}/usr/share/package-licenses/scons/7340866649e9d1091a571077d1f8c8632c8a4fc8
+cp %{_builddir}/scons-%{version}/LICENSE.txt %{buildroot}/usr/share/package-licenses/scons/7340866649e9d1091a571077d1f8c8632c8a4fc8
 python3 -tt setup.py build  install --root=%{buildroot}
 echo ----[ mark ]----
 cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :
 echo ----[ mark ]----
+pushd ../buildavx2/
+export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "
+export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "
+export FFLAGS="$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "
+export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v3 "
+export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3 "
+python3 -tt setup.py build install --root=%{buildroot}-v3
+popd
 ## install_append content
 find %{buildroot} -name "*.pyc" | xargs rm
 ## install_append end
+/usr/bin/elf-move.py avx2 %{buildroot}-v3 %{buildroot} %{buildroot}/usr/share/clear/filemap/filemap-%{name}
 
 %files
 %defattr(-,root,root,-)
@@ -277,7 +298,10 @@ find %{buildroot} -name "*.pyc" | xargs rm
 /usr/lib/scons/SCons/cpp.py
 /usr/lib/scons/SCons/dblite.py
 /usr/lib/scons/SCons/exitfuncs.py
-/usr/lib/scons/scons-3.1.2-py3.9.egg-info
+/usr/lib/scons/scons-3.1.2-py3.10.egg-info/PKG-INFO
+/usr/lib/scons/scons-3.1.2-py3.10.egg-info/SOURCES.txt
+/usr/lib/scons/scons-3.1.2-py3.10.egg-info/dependency_links.txt
+/usr/lib/scons/scons-3.1.2-py3.10.egg-info/top_level.txt
 
 %files bin
 %defattr(-,root,root,-)
