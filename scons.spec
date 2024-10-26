@@ -5,7 +5,7 @@
 #
 Name     : scons
 Version  : 3.1.2
-Release  : 46
+Release  : 47
 URL      : https://sourceforge.net/projects/scons/files/scons/3.1.2/scons-3.1.2.tar.gz
 Source0  : https://sourceforge.net/projects/scons/files/scons/3.1.2/scons-3.1.2.tar.gz
 Summary  : Open Source next-generation build tool.
